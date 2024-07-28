@@ -13,32 +13,35 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get('me')
-  findAll() {
-    return this.usersService.findAll();
+  getUser(@Req() req: RequestWithUser) {
+    return req.user;
   }
 
   @Patch('me')
-  update(@Body() updateUserDto: UpdateUserDto, @Req() req: RequestWithUser) {
+  updateUser(
+    @Body() updateUserDto: UpdateUserDto,
+    @Req() req: RequestWithUser,
+  ) {
     return this.usersService.update(req.user.id, updateUserDto);
   }
 
   @Get('me/wishes')
-  findUserWishes() {
+  getUserWishes() {
     return this.usersService.findAll();
   }
 
   @Get(':username')
-  find(@Param('username') username: string) {
+  getByUsername(@Param('username') username: string) {
     return this.usersService.findOne(+username);
   }
 
   @Get(':username/wishes')
-  findUsernameWishes() {
+  getUsernameWishes() {
     return this.usersService.findAll();
   }
 
   @Post('find')
-  create(@Body() findUserDto: FindUserDto) {
+  find(@Body() findUserDto: FindUserDto) {
     const { query } = findUserDto;
     return this.usersService.findByEmailOrUsername(query);
   }
