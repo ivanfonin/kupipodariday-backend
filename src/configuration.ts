@@ -1,3 +1,5 @@
+import { User } from './users/entities/user.entity';
+
 export default () => ({
   port: parseInt(process.env.PORT, 10) || 3000,
   database: {
@@ -7,7 +9,7 @@ export default () => ({
     username: process.env.DATABASE_USERNAME || 'student',
     password: process.env.DATABASE_PASSWORD || 'student',
     database: process.env.DATABASE_NAME || 'kupipodariday',
-    entities: [],
-    synchronize: process.env.MODE === 'development' ? true : false,
+    entities: [User],
+    synchronize: process.env.MODE === 'development',
   },
 });
