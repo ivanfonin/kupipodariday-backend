@@ -8,6 +8,6 @@ export default () => ({
     password: process.env.DATABASE_PASSWORD || 'student',
     database: process.env.DATABASE_NAME || 'kupipodariday',
     entities: [],
-    synchronize: false,
+    synchronize: process.env.MODE === 'development' ? true : false,
   },
 });
