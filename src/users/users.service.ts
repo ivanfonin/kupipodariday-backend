@@ -19,6 +19,7 @@ export class UsersService {
   async create(createUserDto: CreateUserDto): Promise<User> {
     try {
       const user = await this.userRepository.save(createUserDto);
+      delete user.password;
       return user;
     } catch (err) {
       if (err instanceof QueryFailedError) {
