@@ -51,7 +51,6 @@ export class UsersService {
       throw new NotFoundException(`Пользователь ${username} не найден`);
     }
 
-    delete user.password;
     return user;
   }
 
