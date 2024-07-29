@@ -7,7 +7,7 @@ export class HashService {
     return bcrypt.hash(str, 10);
   }
 
-  compare(str: string, hash: string) {
+  compare(str: string, hash: string): Promise<boolean> {
     return bcrypt.compare(str, hash);
   }
 }
