@@ -1,6 +1,6 @@
 import { IsOptional, IsUrl, Length, IsEmail } from 'class-validator';
-import { BaseEntity } from 'src/utils/entities/base.entity';
 import { Entity, Column, Unique } from 'typeorm';
+import { BaseEntity } from 'src/utils/entities/base.entity';
 
 @Entity()
 @Unique(['username'])
@@ -27,4 +27,10 @@ export class User extends BaseEntity {
   @Column()
   @Length(6)
   password: string;
+
+  // wishes
+
+  // offers
+
+  // wishlists
 }
