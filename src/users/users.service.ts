@@ -1,5 +1,7 @@
 import {
+  BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -9,17 +11,18 @@ import { User } from './entities/user.entity';
 import { Like, QueryFailedError, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { isEmail } from 'class-validator';
+import { HashService } from 'src/hash/hash.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
+    private readonly hashService: HashService,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     try {
       const user = await this.userRepository.save(createUserDto);
-      delete user.password;
       return user;
     } catch (err) {
       if (err instanceof QueryFailedError) {
@@ -40,7 +43,6 @@ export class UsersService {
       throw new NotFoundException(`Пользователь не найден`);
     }
 
-    delete user.password;
     return user;
   }
 
@@ -67,30 +69,39 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
-    const user = await this.userRepository.findOne({ where: { email } });
-    delete user.password;
-    delete user.email;
-    return user;
+    return await this.userRepository.findOne({ where: { email } });
   }
 
   async findByUsername(username: string) {
-    const users = await this.userRepository.find({
+    return await this.userRepository.find({
       where: { username: Like(`%${username}%`) },
     });
-    const usersWithoutPasswordsAndEmails = users.map((user) => {
-      delete user.password;
-      delete user.email;
-      return user;
-    });
-    return usersWithoutPasswordsAndEmails;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    console.log(updateUserDto);
-    return `This action updates a #${id} user`;
+  async updateOne(id: number, updateUserDto: UpdateUserDto) {
+    if (updateUserDto.hasOwnProperty('password')) {
+      const hashedPassword = await this.hashService.hash(
+        updateUserDto.password,
+      );
+      updateUserDto = { ...updateUserDto, password: hashedPassword };
+    }
+
+    const updated = await this.userRepository.update(id, updateUserDto);
+
+    if (!updated) {
+      throw new BadRequestException(`Ошибка при обновлении профиля`);
+    }
+
+    return this.findById(id);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async removeOne(id: number) {
+    const user = await this.findById(id);
+
+    if (!user) {
+      throw new ForbiddenException(`Не удается удалить пользователя`);
+    }
+
+    return this.userRepository.delete(id);
   }
 }
