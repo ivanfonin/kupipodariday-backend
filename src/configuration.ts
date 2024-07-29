@@ -15,4 +15,5 @@ export default () => ({
     entities: [User, Wish, Wishlist, Offer],
     synchronize: process.env.MODE === 'development',
   },
+  jwt_secret: 'secret-key',
 });

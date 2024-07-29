@@ -1,27 +1,30 @@
-import { Controller, Get, Post, Body, Patch, Param, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { FindUserDto } from './dto/find-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
+import { JwtGuard } from 'src/auth/guards/jwt.guard';
 
-interface RequestWithUser extends Request {
-  user: User;
-}
-
+@UseGuards(JwtGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get('me')
-  getUser(@Req() req: RequestWithUser) {
+  getUser(@Req() req) {
     return req.user;
   }
 
   @Patch('me')
-  updateUser(
-    @Body() updateUserDto: UpdateUserDto,
-    @Req() req: RequestWithUser,
-  ) {
+  updateUser(@Body() updateUserDto: UpdateUserDto, @Req() req) {
     return this.usersService.update(req.user.id, updateUserDto);
   }
 

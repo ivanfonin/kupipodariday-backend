@@ -33,6 +33,17 @@ export class UsersService {
     }
   }
 
+  async findById(id: number) {
+    const user = await this.userRepository.findOne({ where: { id } });
+
+    if (!user) {
+      throw new NotFoundException(`Пользователь не найден`);
+    }
+
+    delete user.password;
+    return user;
+  }
+
   async findOne(username: string) {
     const user = await this.userRepository.findOne({ where: { username } });
 
