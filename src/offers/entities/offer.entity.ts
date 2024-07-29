@@ -1,9 +1,11 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, ManyToOne } from 'typeorm';
 import { BaseEntity } from 'src/utils/entities/base.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Entity()
 export class Offer extends BaseEntity {
-  // user
+  @ManyToOne(() => User, (user) => user.wishes)
+  user: User;
 
   // item
 

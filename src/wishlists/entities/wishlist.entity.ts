@@ -1,6 +1,8 @@
 import { IsUrl, Length } from 'class-validator';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
 import { BaseEntity } from 'src/utils/entities/base.entity';
+import { User } from 'src/users/entities/user.entity';
+import { Wish } from 'src/wishes/entities/wish.entity';
 
 @Entity()
 export class Wishlist extends BaseEntity {
@@ -16,5 +18,10 @@ export class Wishlist extends BaseEntity {
   @IsUrl()
   image: string;
 
-  // items
+  @ManyToOne(() => User, (user) => user.wishes)
+  owner: User;
+
+  @ManyToMany(() => Wish, (wish) => wish.id)
+  @JoinTable()
+  items: Wish[];
 }
