@@ -5,6 +5,7 @@ import { UpdateWishlistDto } from './dto/update-wishlist.dto';
 @Injectable()
 export class WishlistsService {
   create(createWishlistDto: CreateWishlistDto) {
+    console.log(createWishlistDto);
     return 'This action adds a new wishlist';
   }
 
@@ -17,6 +18,7 @@ export class WishlistsService {
   }
 
   update(id: number, updateWishlistDto: UpdateWishlistDto) {
+    console.log(updateWishlistDto);
     return `This action updates a #${id} wishlist`;
   }
 
