@@ -27,22 +27,22 @@ export class UsersController {
 
   @Get('me/wishes')
   getUserWishes() {
-    return this.usersService.findAll();
-  }
-
-  @Get(':username')
-  getByUsername(@Param('username') username: string) {
-    return this.usersService.findOne(+username);
-  }
-
-  @Get(':username/wishes')
-  getUsernameWishes() {
-    return this.usersService.findAll();
+    return 'returns auth user wishes';
   }
 
   @Post('find')
   find(@Body() findUserDto: FindUserDto) {
     const { query } = findUserDto;
-    return this.usersService.findByEmailOrUsername(query);
+    return this.usersService.findMany(query);
+  }
+
+  @Get(':username')
+  getByUsername(@Param('username') username: string) {
+    return this.usersService.findOne(username);
+  }
+
+  @Get(':username/wishes')
+  getUsernameWishes(@Param('username') username: string) {
+    return `returns ${username} wishes`;
   }
 }
