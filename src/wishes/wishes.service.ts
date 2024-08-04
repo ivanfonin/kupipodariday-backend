@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateWishDto } from './dto/create-wish.dto';
 import { UpdateWishDto } from './dto/update-wish.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -20,12 +24,8 @@ export class WishesService {
 
   async getTopWishes() {
     const wishes = await this.wishRepository.find({
-      relations: {
-        owner: true,
-      },
-      order: {
-        copied: 'DESC',
-      },
+      relations: { owner: true },
+      order: { copied: 'DESC' },
       take: 20,
     });
 
@@ -38,12 +38,8 @@ export class WishesService {
 
   async getLastWishes() {
     const wishes = await this.wishRepository.find({
-      relations: {
-        owner: true,
-      },
-      order: {
-        createdAt: 'DESC',
-      },
+      relations: { owner: true },
+      order: { createdAt: 'DESC' },
       take: 40,
     });
 
@@ -67,11 +63,25 @@ export class WishesService {
     return wish;
   }
 
-  update(id: number, updateWishDto: UpdateWishDto) {
-    return this.wishRepository.update({ id }, updateWishDto);
+  async update(id: number, userId: number, updateWishDto: UpdateWishDto) {
+    const wish = await this.findOne(id);
+
+    if (wish.owner.id !== userId) {
+      throw new ForbiddenException(`Нет прав для редактирования подарка`);
+    }
+
+    // Обновляем только свойства, перечисленные в Dto, исключаем обновление copied и raised.
+    if (updateWishDto.name !== undefined) wish.name = updateWishDto.name;
+    if (updateWishDto.link !== undefined) wish.link = updateWishDto.link;
+    if (updateWishDto.image !== undefined) wish.image = updateWishDto.image;
+    if (updateWishDto.price !== undefined) wish.price = updateWishDto.price;
+    if (updateWishDto.description !== undefined)
+      wish.description = updateWishDto.description;
+
+    return this.wishRepository.save(wish);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} wish`;
+  remove(id: number, userId: number) {
+    return `This action removes a #${id} wish for user #${userId}`;
   }
 }

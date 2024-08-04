@@ -115,6 +115,8 @@ export class UsersService {
       throw new BadRequestException(`Пользователь не найден`);
     }
 
+    console.log(user);
+
     return user.wishes;
   }
 

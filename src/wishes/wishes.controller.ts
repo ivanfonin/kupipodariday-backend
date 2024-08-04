@@ -27,16 +27,21 @@ export class WishesController {
     return this.wishesService.create(req.user.id, createWishDto);
   }
 
+  @UseInterceptors(RemoveEmailInterceptor)
+  @UseInterceptors(RemovePasswordInterceptor)
   @Get('last')
   getLastWishes() {
     return this.wishesService.getLastWishes();
   }
 
+  @UseInterceptors(RemoveEmailInterceptor)
+  @UseInterceptors(RemovePasswordInterceptor)
   @Get('top')
   getTopWishes() {
     return this.wishesService.getTopWishes();
   }
 
+  @UseGuards(JwtGuard)
   @UseInterceptors(RemoveEmailInterceptor)
   @UseInterceptors(RemovePasswordInterceptor)
   @Get(':id')
@@ -44,13 +49,21 @@ export class WishesController {
     return this.wishesService.findOne(+id);
   }
 
+  @UseGuards(JwtGuard)
+  @UseInterceptors(RemoveEmailInterceptor)
+  @UseInterceptors(RemovePasswordInterceptor)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateWishDto: UpdateWishDto) {
-    return this.wishesService.update(+id, updateWishDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateWishDto: UpdateWishDto,
+    @Req() req,
+  ) {
+    return this.wishesService.update(+id, req.user.id, updateWishDto);
   }
 
+  @UseGuards(JwtGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.wishesService.remove(+id);
+  remove(@Param('id') id: string, @Req() req) {
+    return this.wishesService.remove(+id, req.user.id);
   }
 }
