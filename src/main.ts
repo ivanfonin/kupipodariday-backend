@@ -5,6 +5,9 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Todo:
+  // /wises/last & /wishes/top должны включать информацию об offers. проверить GET /wishes/:id
+
   // Включить CORS для теста
   app.enableCors({
     origin: 'http://localhost:3001',
