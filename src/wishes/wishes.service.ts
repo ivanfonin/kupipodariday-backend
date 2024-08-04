@@ -24,7 +24,7 @@ export class WishesService {
     });
   }
 
-  async getTopWishes() {
+  async getTopWishes(): Promise<Wish[]> {
     const wishes = await this.wishRepository.find({
       relations: { owner: true },
       order: { copied: 'DESC' },
@@ -38,7 +38,7 @@ export class WishesService {
     return wishes;
   }
 
-  async getLastWishes() {
+  async getLastWishes(): Promise<Wish[]> {
     const wishes = await this.wishRepository.find({
       relations: { owner: true },
       order: { createdAt: 'DESC' },
@@ -52,7 +52,7 @@ export class WishesService {
     return wishes;
   }
 
-  async findOne(id: number) {
+  async findOne(id: number): Promise<Wish> {
     const wish = await this.wishRepository.findOne({
       where: { id },
       relations: { owner: true },
@@ -65,7 +65,11 @@ export class WishesService {
     return wish;
   }
 
-  async update(id: number, userId: number, updateWishDto: UpdateWishDto) {
+  async update(
+    id: number,
+    userId: number,
+    updateWishDto: UpdateWishDto,
+  ): Promise<Wish> {
     const wish = await this.findOne(id);
 
     if (wish.owner.id !== userId) {
@@ -89,7 +93,7 @@ export class WishesService {
     return this.wishRepository.save(wish);
   }
 
-  async remove(id: number, userId: number) {
+  async remove(id: number, userId: number): Promise<void> {
     const wish = await this.findOne(id);
 
     if (wish.owner.id !== userId) {
@@ -99,7 +103,7 @@ export class WishesService {
     this.wishRepository.delete(id);
   }
 
-  async copyWish(id: number, userId: number) {
+  async copyWish(id: number, userId: number): Promise<Wish> {
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
