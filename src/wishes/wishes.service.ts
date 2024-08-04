@@ -70,9 +70,9 @@ export class WishesService {
       throw new ForbiddenException(`Нет прав для редактирования подарка`);
     }
 
-    if (wish.raised > 0) {
+    if (wish.raised > 0 && updateWishDto.hasOwnProperty('price')) {
       throw new ForbiddenException(
-        `Нельзя редактировать подарок, на который уже скинулись`,
+        `Нельзя редактировать стоимость подарка, на который уже начали скидываться`,
       );
     }
 
@@ -96,4 +96,6 @@ export class WishesService {
 
     return this.wishRepository.delete(id);
   }
+
+  // async copyWish(id: number, userId: number) {}
 }
