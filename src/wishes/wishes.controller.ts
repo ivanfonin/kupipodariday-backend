@@ -27,9 +27,14 @@ export class WishesController {
     return this.wishesService.create(req.user.id, createWishDto);
   }
 
-  @Get()
-  findAll() {
-    return this.wishesService.findAll();
+  @Get('last')
+  getLastWishes() {
+    return this.wishesService.getLastWishes();
+  }
+
+  @Get('top')
+  getTopWishes() {
+    return this.wishesService.getTopWishes();
   }
 
   @UseInterceptors(RemoveEmailInterceptor)

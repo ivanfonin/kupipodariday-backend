@@ -18,8 +18,40 @@ export class WishesService {
     });
   }
 
-  findAll() {
-    return `This action returns all wishes`;
+  async getTopWishes() {
+    const wishes = await this.wishRepository.find({
+      relations: {
+        owner: true,
+      },
+      order: {
+        copied: 'DESC',
+      },
+      take: 20,
+    });
+
+    if (!wishes) {
+      throw new NotFoundException(`Подаки не найдены`);
+    }
+
+    return wishes;
+  }
+
+  async getLastWishes() {
+    const wishes = await this.wishRepository.find({
+      relations: {
+        owner: true,
+      },
+      order: {
+        createdAt: 'DESC',
+      },
+      take: 40,
+    });
+
+    if (!wishes) {
+      throw new NotFoundException(`Подаки не найдены`);
+    }
+
+    return wishes;
   }
 
   async findOne(id: number) {
