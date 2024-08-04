@@ -70,6 +70,12 @@ export class WishesService {
       throw new ForbiddenException(`Нет прав для редактирования подарка`);
     }
 
+    if (wish.raised > 0) {
+      throw new ForbiddenException(
+        `Нельзя редактировать подарок, на который уже скинулись`,
+      );
+    }
+
     // Обновляем только свойства, перечисленные в Dto, исключаем обновление copied и raised.
     if (updateWishDto.name !== undefined) wish.name = updateWishDto.name;
     if (updateWishDto.link !== undefined) wish.link = updateWishDto.link;
