@@ -117,4 +117,17 @@ export class UsersService {
 
     return user.wishes;
   }
+
+  async findUsernameWishes(username: string) {
+    const user = await this.userRepository.findOne({
+      where: { username },
+      relations: ['wishes'],
+    });
+
+    if (!user) {
+      throw new BadRequestException(`Пользователь не найден`);
+    }
+
+    return user.wishes;
+  }
 }

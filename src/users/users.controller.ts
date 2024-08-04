@@ -58,6 +58,6 @@ export class UsersController {
 
   @Get(':username/wishes')
   getUsernameWishes(@Param('username') username: string) {
-    return `returns ${username} wishes`;
+    return this.usersService.findUsernameWishes(username);
   }
 }
