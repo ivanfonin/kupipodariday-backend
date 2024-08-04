@@ -96,7 +96,7 @@ export class WishesService {
       throw new ForbiddenException(`Нет прав для удаления подарка`);
     }
 
-    return this.wishRepository.delete(id);
+    this.wishRepository.delete(id);
   }
 
   async copyWish(id: number, userId: number) {
