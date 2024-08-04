@@ -8,11 +8,14 @@ import {
   Delete,
   Req,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { WishesService } from './wishes.service';
 import { CreateWishDto } from './dto/create-wish.dto';
 import { UpdateWishDto } from './dto/update-wish.dto';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
+import { RemovePasswordInterceptor } from 'src/interceptors/remove-password.interceptor';
+import { RemoveEmailInterceptor } from 'src/interceptors/remove-email-interceptor';
 
 @Controller('wishes')
 export class WishesController {
@@ -29,6 +32,8 @@ export class WishesController {
     return this.wishesService.findAll();
   }
 
+  @UseInterceptors(RemoveEmailInterceptor)
+  @UseInterceptors(RemovePasswordInterceptor)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.wishesService.findOne(+id);

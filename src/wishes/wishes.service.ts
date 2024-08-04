@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateWishDto } from './dto/create-wish.dto';
 import { UpdateWishDto } from './dto/update-wish.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -22,8 +22,17 @@ export class WishesService {
     return `This action returns all wishes`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} wish`;
+  async findOne(id: number) {
+    const wish = await this.wishRepository.findOne({
+      where: { id },
+      relations: { owner: true },
+    });
+
+    if (!wish) {
+      throw new NotFoundException(`Подарок не найден`);
+    }
+
+    return wish;
   }
 
   update(id: number, updateWishDto: UpdateWishDto) {
