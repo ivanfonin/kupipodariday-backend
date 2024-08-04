@@ -81,7 +81,13 @@ export class WishesService {
     return this.wishRepository.save(wish);
   }
 
-  remove(id: number, userId: number) {
-    return `This action removes a #${id} wish for user #${userId}`;
+  async remove(id: number, userId: number) {
+    const wish = await this.findOne(id);
+
+    if (wish.owner.id !== userId) {
+      throw new ForbiddenException(`Нет прав для удаления подарка`);
+    }
+
+    return this.wishRepository.delete(id);
   }
 }
