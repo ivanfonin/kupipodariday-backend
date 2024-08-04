@@ -1,18 +1,20 @@
 import {
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateWishDto } from './dto/create-wish.dto';
 import { UpdateWishDto } from './dto/update-wish.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Wish } from './entities/wish.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 
 @Injectable()
 export class WishesService {
   constructor(
     @InjectRepository(Wish) private wishRepository: Repository<Wish>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(userId: number, createWishDto: CreateWishDto): Promise<Wish> {
@@ -97,5 +99,47 @@ export class WishesService {
     return this.wishRepository.delete(id);
   }
 
-  // async copyWish(id: number, userId: number) {}
+  async copyWish(id: number, userId: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const wish = await this.findOne(id);
+
+      if (wish.owner.id === userId) {
+        throw new ForbiddenException(`Нельзя копировать свой же подарок`);
+      }
+
+      // Копируем подарок, указывая нового owner
+      const copiedWish = queryRunner.manager.create(Wish, {
+        name: wish.name,
+        link: wish.link,
+        image: wish.image,
+        price: wish.price,
+        description: wish.description,
+        owner: { id: userId },
+        raised: 0,
+        copied: 0,
+      });
+
+      // Сохраняем новый подарок в базе
+      await queryRunner.manager.save(copiedWish);
+
+      // У копируемого подарка увеличиваем copied на 1 и сохраняем
+      wish.copied += 1;
+      await queryRunner.manager.save(wish);
+
+      await queryRunner.commitTransaction();
+
+      return copiedWish;
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(
+        `Копирование подарка не удалось: ${err.message}`,
+      );
+    } finally {
+      await queryRunner.release();
+    }
+  }
 }
