@@ -139,9 +139,7 @@ export class WishesService {
       return copiedWish;
     } catch (err) {
       await queryRunner.rollbackTransaction();
-      throw new InternalServerErrorException(
-        `Копирование подарка не удалось: ${err.message}`,
-      );
+      throw new InternalServerErrorException(`Копирование подарка не удалось`);
     } finally {
       await queryRunner.release();
     }

@@ -41,7 +41,7 @@ export class Wish extends BaseEntity {
   @Length(1, 1024)
   description: string;
 
-  @OneToMany(() => Offer, (offer) => offer.user)
+  @OneToMany(() => Offer, (offer) => offer.item)
   offers: Offer[];
 
   @Column({ default: 0 })
