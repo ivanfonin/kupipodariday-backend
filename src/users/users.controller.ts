@@ -37,8 +37,8 @@ export class UsersController {
   }
 
   @Get('me/wishes')
-  getUserWishes() {
-    return 'returns auth user wishes';
+  getUserWishes(@Req() req) {
+    return this.usersService.findUserWishes(req.user.id);
   }
 
   @Post('find')
