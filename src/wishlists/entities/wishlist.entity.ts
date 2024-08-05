@@ -11,14 +11,10 @@ export class Wishlist extends BaseEntity {
   name: string;
 
   @Column()
-  @Length(1, 1500)
-  description: string;
-
-  @Column()
   @IsUrl()
   image: string;
 
-  @ManyToOne(() => User, (user) => user.wishes)
+  @ManyToOne(() => User, (user) => user.wishlists)
   owner: User;
 
   @ManyToMany(() => Wish, (wish) => wish.id)

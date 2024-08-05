@@ -8,7 +8,7 @@ import { CreateWishDto } from './dto/create-wish.dto';
 import { UpdateWishDto } from './dto/update-wish.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Wish } from './entities/wish.entity';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 
 @Injectable()
 export class WishesService {
@@ -63,6 +63,18 @@ export class WishesService {
     }
 
     return wish;
+  }
+
+  async findMany(ids: number[]): Promise<Wish[]> {
+    const wishes = await this.wishRepository.find({
+      where: { id: In(ids) },
+    });
+
+    if (!wishes) {
+      throw new NotFoundException(`Подарки не найдены`);
+    }
+
+    return wishes;
   }
 
   async update(
