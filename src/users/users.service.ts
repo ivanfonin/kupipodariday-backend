@@ -8,7 +8,7 @@ import {
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Like, QueryFailedError, Repository } from 'typeorm';
+import { Like, Not, QueryFailedError, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { isEmail } from 'class-validator';
 import { HashService } from 'src/hash/hash.service';
@@ -27,6 +27,16 @@ export class UsersService {
     } catch (err) {
       if (err instanceof QueryFailedError) {
         if (err.driverError.code === '23505') {
+          const detail = err.driverError.detail;
+          let field = 'data';
+
+          // Извлекаем информацию об ошибке.
+          if (detail.includes('username')) {
+            field = 'username';
+          } else if (detail.includes('email')) {
+            field = 'email';
+          }
+
           throw new ConflictException(
             'Пользователь с такими данными уже существует',
           );
@@ -79,6 +89,17 @@ export class UsersService {
   }
 
   async updateOne(id: number, updateUserDto: UpdateUserDto) {
+    // Сначала проверим нет ли пользователя с таким email в БД
+    if (updateUserDto.hasOwnProperty('email')) {
+      const existingUser = await this.userRepository.findOne({
+        where: { email: updateUserDto.email, id: Not(id) },
+      });
+  
+      if (existingUser) {
+        throw new ConflictException(`Пользователь с таким email уже существует`);
+      }
+    }
+
     if (updateUserDto.hasOwnProperty('password')) {
       const hashedPassword = await this.hashService.hash(
         updateUserDto.password,
@@ -86,10 +107,10 @@ export class UsersService {
       updateUserDto = { ...updateUserDto, password: hashedPassword };
     }
 
-    const updated = await this.userRepository.update(id, updateUserDto);
+    const result = await this.userRepository.update(id, updateUserDto);
 
-    if (!updated) {
-      throw new BadRequestException(`Ошибка при обновлении профиля`);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Пользователь не найден`);
     }
 
     return this.findById(id);
