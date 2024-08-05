@@ -9,6 +9,7 @@ import { UpdateWishDto } from './dto/update-wish.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Wish } from './entities/wish.entity';
 import { DataSource, In, Repository } from 'typeorm';
+import { Offer } from 'src/offers/entities/offer.entity';
 
 @Injectable()
 export class WishesService {
@@ -16,6 +17,10 @@ export class WishesService {
     @InjectRepository(Wish) private wishRepository: Repository<Wish>,
     private readonly dataSource: DataSource,
   ) {}
+
+  private filterWishOffers(offers: Offer[]): Offer[] {
+    return offers.filter((offer) => !offer.hidden);
+  }
 
   async create(userId: number, createWishDto: CreateWishDto): Promise<Wish> {
     return await this.wishRepository.save({
@@ -35,7 +40,10 @@ export class WishesService {
       throw new NotFoundException(`Подаки не найдены`);
     }
 
-    return wishes;
+    return wishes.map((wish) => ({
+      ...wish,
+      offers: this.filterWishOffers(wish.offers),
+    }));
   }
 
   async getLastWishes(): Promise<Wish[]> {
@@ -49,7 +57,10 @@ export class WishesService {
       throw new NotFoundException(`Подаки не найдены`);
     }
 
-    return wishes;
+    return wishes.map((wish) => ({
+      ...wish,
+      offers: this.filterWishOffers(wish.offers),
+    }));
   }
 
   async findOne(id: number): Promise<Wish> {
@@ -61,6 +72,8 @@ export class WishesService {
     if (!wish) {
       throw new NotFoundException(`Подарок не найден`);
     }
+
+    wish.offers = this.filterWishOffers(wish.offers);
 
     return wish;
   }
@@ -102,7 +115,11 @@ export class WishesService {
     if (updateWishDto.description !== undefined)
       wish.description = updateWishDto.description;
 
-    return this.wishRepository.save(wish);
+    const savedWish = await this.wishRepository.save(wish);
+
+    savedWish.offers = this.filterWishOffers(wish.offers);
+
+    return savedWish;
   }
 
   async remove(id: number, userId: number): Promise<void> {
@@ -147,6 +164,8 @@ export class WishesService {
       await queryRunner.manager.save(wish);
 
       await queryRunner.commitTransaction();
+
+      copiedWish.offers = this.filterWishOffers(wish.offers);
 
       return copiedWish;
     } catch (err) {
