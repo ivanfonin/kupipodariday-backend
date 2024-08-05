@@ -3,12 +3,14 @@ import {
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Offer } from './entities/offer.entity';
 import { DataSource, Repository } from 'typeorm';
 import { WishesService } from 'src/wishes/wishes.service';
+import { Wish } from 'src/wishes/entities/wish.entity';
 
 @Injectable()
 export class OffersService {
@@ -24,34 +26,40 @@ export class OffersService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const wish = await this.wishesService.findOne(createOfferDto.itemId);
+      const wish = await queryRunner.manager.findOne(Wish, {
+        where: { id: createOfferDto.itemId },
+        relations: ['owner'],
+      });
+
+      if (!wish) {
+        throw new NotFoundException(`Подарок не найден`);
+      }
 
       if (wish.owner.id === userId) {
         throw new ForbiddenException(`Нельзя скинуться на свой же подарок`);
       }
 
-      if (wish.raised >= wish.price) {
+      if (Number(wish.raised) >= wish.price) {
         throw new BadRequestException(`Средства на этот подарок уже собраны`);
       }
 
-      if (wish.raised + createOfferDto.amount > wish.price) {
+      if (Number(wish.raised) + createOfferDto.amount > wish.price) {
         throw new BadRequestException(
           `Сумма сбора не может превышать стоимость подарка`,
         );
       }
 
       // Создаём новый offer
-      const offer = queryRunner.manager.create(Offer, {
-        ...createOfferDto,
+      const newOffer = queryRunner.manager.create(Offer, {
+        amount: createOfferDto.amount,
+        hidden: createOfferDto.hidden,
         user: { id: userId },
         item: wish,
       });
-
-      // Сохраняем offer в базе
-      await queryRunner.manager.save(offer);
+      const offer = await queryRunner.manager.save(newOffer);
 
       // Увеличиваем сумму собранных средств на подарок и сохраняем
-      wish.raised += createOfferDto.amount;
+      wish.raised = Number(wish.raised) + createOfferDto.amount;
       await queryRunner.manager.save(wish);
 
       await queryRunner.commitTransaction();

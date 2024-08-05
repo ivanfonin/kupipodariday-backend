@@ -26,7 +26,7 @@ export class WishesService {
 
   async getTopWishes(): Promise<Wish[]> {
     const wishes = await this.wishRepository.find({
-      relations: { owner: true },
+      relations: { owner: true, offers: true },
       order: { copied: 'DESC' },
       take: 20,
     });
@@ -40,7 +40,7 @@ export class WishesService {
 
   async getLastWishes(): Promise<Wish[]> {
     const wishes = await this.wishRepository.find({
-      relations: { owner: true },
+      relations: { owner: true, offers: true },
       order: { createdAt: 'DESC' },
       take: 40,
     });
@@ -55,7 +55,7 @@ export class WishesService {
   async findOne(id: number): Promise<Wish> {
     const wish = await this.wishRepository.findOne({
       where: { id },
-      relations: { owner: true },
+      relations: { owner: true, offers: true },
     });
 
     if (!wish) {
@@ -76,7 +76,7 @@ export class WishesService {
       throw new ForbiddenException(`Нет прав для редактирования подарка`);
     }
 
-    if (wish.raised > 0 && updateWishDto.hasOwnProperty('price')) {
+    if (updateWishDto.hasOwnProperty('price') && wish.raised > 0) {
       throw new ForbiddenException(
         `Нельзя редактировать стоимость подарка, на который уже начали скидываться`,
       );
