@@ -27,8 +27,10 @@ export class OffersController {
     return this.offersService.create(createOfferDto, req.user.id);
   }
 
+  @UseInterceptors(RemoveEmailInterceptor)
+  @UseInterceptors(RemovePasswordInterceptor)
   @Get()
-  findAll() {
+  findAll(): Promise<Offer[]> {
     return this.offersService.findAll();
   }
 

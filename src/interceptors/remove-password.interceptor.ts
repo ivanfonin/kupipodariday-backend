@@ -20,6 +20,11 @@ export class RemovePasswordInterceptor implements NestInterceptor {
                 }
               }
             }
+            if (obj.hasOwnProperty('user')) {
+              if (obj.user.hasOwnProperty('password')) {
+                delete obj.user.password;
+              }
+            }
             if (obj.hasOwnProperty('owner')) {
               if (obj.owner.hasOwnProperty('password')) {
                 delete obj.owner.password;
@@ -36,6 +41,11 @@ export class RemovePasswordInterceptor implements NestInterceptor {
               if (data.item.owner.hasOwnProperty('password')) {
                 delete data.item.owner.password;
               }
+            }
+          }
+          if (data.hasOwnProperty('user')) {
+            if (data.user.hasOwnProperty('password')) {
+              delete data.user.password;
             }
           }
           if (data.hasOwnProperty('owner')) {

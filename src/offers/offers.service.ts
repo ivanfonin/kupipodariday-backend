@@ -81,8 +81,19 @@ export class OffersService {
     }
   }
 
-  findAll() {
-    return `This action returns all offers`;
+  async findAll(): Promise<Offer[]> {
+    const offers = await this.offerRepository.find({
+      relations: {
+        user: true,
+        item: true,
+      },
+    });
+
+    if (!offers) {
+      throw new NotFoundException(`Предложений сброситься на подарок нет`);
+    }
+
+    return offers;
   }
 
   findOne(id: number) {

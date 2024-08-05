@@ -20,6 +20,11 @@ export class RemoveEmailInterceptor implements NestInterceptor {
                 }
               }
             }
+            if (obj.hasOwnProperty('user')) {
+              if (obj.user.hasOwnProperty('email')) {
+                delete obj.user.email;
+              }
+            }
             if (obj.hasOwnProperty('owner')) {
               if (obj.owner.hasOwnProperty('email')) {
                 delete obj.owner.email;
@@ -36,6 +41,11 @@ export class RemoveEmailInterceptor implements NestInterceptor {
               if (data.item.owner.hasOwnProperty('email')) {
                 delete data.item.owner.email;
               }
+            }
+          }
+          if (data.hasOwnProperty('user')) {
+            if (data.user.hasOwnProperty('email')) {
+              delete data.user.email;
             }
           }
           if (data.hasOwnProperty('owner')) {
