@@ -49,8 +49,7 @@ export class OffersService {
 
       // Создаём новый offer
       const newOffer = queryRunner.manager.create(Offer, {
-        amount: createOfferDto.amount,
-        hidden: createOfferDto.hidden,
+        ...createOfferDto,
         user: { id: userId },
         item: wish,
       });
@@ -65,7 +64,18 @@ export class OffersService {
       return offer;
     } catch (err) {
       await queryRunner.rollbackTransaction();
-      throw new InternalServerErrorException(`Создание оффера не удалось`);
+
+      if (
+        // Если это ошибка, которую мы уже выбросили, то выбрасываем её ещё раз
+        err instanceof NotFoundException ||
+        err instanceof ForbiddenException ||
+        err instanceof BadRequestException
+      ) {
+        throw err;
+      } else {
+        // Если какая-то новая, то выбрасываем ошибку сервера
+        throw new InternalServerErrorException(`Создание оффера не удалось`);
+      }
     } finally {
       await queryRunner.release();
     }
