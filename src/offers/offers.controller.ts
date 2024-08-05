@@ -13,6 +13,7 @@ import { CreateOfferDto } from './dto/create-offer.dto';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { RemoveEmailInterceptor } from 'src/interceptors/remove-email-interceptor';
 import { RemovePasswordInterceptor } from 'src/interceptors/remove-password.interceptor';
+import { Offer } from './entities/offer.entity';
 
 @UseGuards(JwtGuard)
 @Controller('offers')
@@ -22,7 +23,7 @@ export class OffersController {
   @UseInterceptors(RemoveEmailInterceptor)
   @UseInterceptors(RemovePasswordInterceptor)
   @Post()
-  create(@Body() createOfferDto: CreateOfferDto, @Req() req) {
+  create(@Body() createOfferDto: CreateOfferDto, @Req() req): Promise<Offer> {
     return this.offersService.create(createOfferDto, req.user.id);
   }
 
