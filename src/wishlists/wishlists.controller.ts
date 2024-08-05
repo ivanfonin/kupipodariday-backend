@@ -34,7 +34,7 @@ export class WishlistsController {
   }
 
   @Get()
-  findAll() {
+  findAll(): Promise<Wishlist[]> {
     return this.wishlistsService.findAll();
   }
 

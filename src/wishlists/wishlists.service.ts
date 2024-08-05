@@ -54,7 +54,7 @@ export class WishlistsService {
     return wishlists;
   }
 
-  async findOne(id: number) {
+  async findOne(id: number): Promise<Wishlist> {
     const wishlist = await this.wishlistRepository.findOne({
       where: { id },
       relations: {
