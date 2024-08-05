@@ -18,13 +18,13 @@ import { Wishlist } from './entities/wishlist.entity';
 import { RemoveEmailInterceptor } from 'src/interceptors/remove-email-interceptor';
 import { RemovePasswordInterceptor } from 'src/interceptors/remove-password.interceptor';
 
+@UseInterceptors(RemoveEmailInterceptor)
+@UseInterceptors(RemovePasswordInterceptor)
 @Controller('wishlistlists')
 export class WishlistsController {
   constructor(private readonly wishlistsService: WishlistsService) {}
 
   @UseGuards(JwtGuard)
-  @UseInterceptors(RemoveEmailInterceptor)
-  @UseInterceptors(RemovePasswordInterceptor)
   @Post()
   create(
     @Body() createWishlistDto: CreateWishlistDto,
@@ -38,21 +38,25 @@ export class WishlistsController {
     return this.wishlistsService.findAll();
   }
 
+  @UseGuards(JwtGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string): Promise<Wishlist> {
     return this.wishlistsService.findOne(+id);
   }
 
+  @UseGuards(JwtGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
     @Body() updateWishlistDto: UpdateWishlistDto,
-  ) {
-    return this.wishlistsService.update(+id, updateWishlistDto);
+    @Req() req,
+  ): Promise<Wishlist> {
+    return this.wishlistsService.update(+id, updateWishlistDto, req.user.id);
   }
 
+  @UseGuards(JwtGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.wishlistsService.remove(+id);
+  remove(@Param('id') id: string, @Req() req): Promise<Wishlist> {
+    return this.wishlistsService.remove(+id, req.user.id);
   }
 }

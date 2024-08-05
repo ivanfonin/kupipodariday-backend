@@ -1,4 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateWishlistDto } from './dto/create-wishlist.dto';
 import { UpdateWishlistDto } from './dto/update-wishlist.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -34,20 +39,80 @@ export class WishlistsService {
     });
   }
 
-  findAll() {
-    return `This action returns all wishlists`;
+  async findAll(): Promise<Wishlist[]> {
+    const wishlists = await this.wishlistRepository.find({
+      relations: {
+        owner: true,
+        items: true,
+      },
+    });
+
+    if (!wishlists) {
+      throw new NotFoundException(`Списки не найден`);
+    }
+
+    return wishlists;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} wishlist`;
+  async findOne(id: number) {
+    const wishlist = await this.wishlistRepository.findOne({
+      where: { id },
+      relations: {
+        owner: true,
+        items: true,
+      },
+    });
+
+    if (!wishlist) {
+      throw new NotFoundException(`Список не найден`);
+    }
+
+    return wishlist;
   }
 
-  update(id: number, updateWishlistDto: UpdateWishlistDto) {
-    console.log(updateWishlistDto);
-    return `This action updates a #${id} wishlist`;
+  async update(
+    id: number,
+    updateWishlistDto: UpdateWishlistDto,
+    userId: number,
+  ): Promise<Wishlist> {
+    const wishlist = await this.findOne(id);
+
+    if (wishlist.owner.id !== userId) {
+      throw new ForbiddenException(`Нет прав для удаления списка`);
+    }
+
+    const updateData: any = { ...updateWishlistDto };
+
+    if ('itemsId' in updateWishlistDto) {
+      updateData.items = await this.wishesService.findMany(
+        updateWishlistDto.itemsId,
+      );
+    }
+
+    const updated = await this.wishlistRepository.save({
+      ...wishlist,
+      ...updateData,
+    });
+
+    if (!updated) {
+      throw new BadRequestException(`Ошибка при обновлении списка`);
+    }
+
+    return this.findOne(id);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} wishlist`;
+  async remove(id: number, userId: number): Promise<Wishlist> {
+    const wishlist = await this.wishlistRepository.findOne({
+      where: { id },
+      relations: { owner: true },
+    });
+
+    if (wishlist.owner.id !== userId) {
+      throw new ForbiddenException(`Нет прав для удаления списка`);
+    }
+
+    await this.wishlistRepository.delete(id);
+
+    return wishlist;
   }
 }
