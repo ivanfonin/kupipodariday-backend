@@ -16,26 +16,24 @@ import { RemovePasswordInterceptor } from 'src/interceptors/remove-password.inte
 import { Offer } from './entities/offer.entity';
 
 @UseGuards(JwtGuard)
+@UseInterceptors(RemoveEmailInterceptor)
+@UseInterceptors(RemovePasswordInterceptor)
 @Controller('offers')
 export class OffersController {
   constructor(private readonly offersService: OffersService) {}
 
-  @UseInterceptors(RemoveEmailInterceptor)
-  @UseInterceptors(RemovePasswordInterceptor)
   @Post()
   create(@Body() createOfferDto: CreateOfferDto, @Req() req): Promise<Offer> {
     return this.offersService.create(createOfferDto, req.user.id);
   }
 
-  @UseInterceptors(RemoveEmailInterceptor)
-  @UseInterceptors(RemovePasswordInterceptor)
   @Get()
   findAll(): Promise<Offer[]> {
     return this.offersService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string): Promise<Offer> {
     return this.offersService.findOne(+id);
   }
 }

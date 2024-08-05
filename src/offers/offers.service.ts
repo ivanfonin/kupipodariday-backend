@@ -90,13 +90,25 @@ export class OffersService {
     });
 
     if (!offers) {
-      throw new NotFoundException(`Предложений сброситься на подарок нет`);
+      throw new NotFoundException(`Предложений сброситься на подарки нет`);
     }
 
     return offers;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} offer`;
+  async findOne(id: number): Promise<Offer> {
+    const offer = await this.offerRepository.findOne({
+      where: { id },
+      relations: {
+        user: true,
+        item: true,
+      },
+    });
+
+    if (!offer) {
+      throw new NotFoundException(`Предложение сброситься не найдено`);
+    }
+
+    return offer;
   }
 }
