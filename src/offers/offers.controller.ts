@@ -6,16 +6,21 @@ import {
   Param,
   Req,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { OffersService } from './offers.service';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
+import { RemoveEmailInterceptor } from 'src/interceptors/remove-email-interceptor';
+import { RemovePasswordInterceptor } from 'src/interceptors/remove-password.interceptor';
 
 @UseGuards(JwtGuard)
 @Controller('offers')
 export class OffersController {
   constructor(private readonly offersService: OffersService) {}
 
+  @UseInterceptors(RemoveEmailInterceptor)
+  @UseInterceptors(RemovePasswordInterceptor)
   @Post()
   create(@Body() createOfferDto: CreateOfferDto, @Req() req) {
     return this.offersService.create(createOfferDto, req.user.id);
