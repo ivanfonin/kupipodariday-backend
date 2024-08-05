@@ -5,6 +5,8 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // В offers ДОБАВИТЬ ФЛАГ hidden
+
   // Включить CORS для теста
   app.enableCors({
     origin: 'http://localhost:3001',
